@@ -40,7 +40,7 @@ start_service() {
     config_load openwisp_monitoring
     config_get monitored_interfaces monitoring monitored_interfaces "*"
     config_get interval monitoring interval "300"
-    config_get required_memory monitoring required_memory "0.9"
+    config_get required_memory monitoring required_memory "0.05"
 
     interval="$(time_to_seconds "$interval")"
     if [ "$interval" -lt 1 ]; then

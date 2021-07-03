@@ -31,6 +31,7 @@ UCI configuration options must go in ``/etc/config/monitoring``.
 
 - ``monitored_interfaces``: interfaces that needs to be monitored, defaults to ``*`` for all interfaces.
 - ``interval``: time after which device data should be sent to server, defaults to ``300``
+- ``required_memory``: free memory required to save data temporarily, defaults to ``0.05``
 
 Compiling openwrt-openwisp-monitoring
 -------------------------------------
