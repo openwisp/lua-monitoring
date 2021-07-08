@@ -32,7 +32,7 @@ fi
 
 URL="$BASE_URL/api/v1/monitoring/device/$UUID/?key=$KEY"
 
-tmp_dir="/tmp/monitoring"
+tmp_dir="/tmp/openwisp/monitoring"
 
 check_available_memory(){
 	total=$(free | grep Mem | awk '{print $2}')
