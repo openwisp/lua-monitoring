@@ -35,8 +35,8 @@ URL="$BASE_URL/api/v1/monitoring/device/$UUID/?key=$KEY"
 tmp_dir="/tmp/openwisp/monitoring"
 
 check_available_memory(){
-	total=$(free | grep Mem | awk '{print $2}')
-	available=$(free | grep Mem | awk '{print $7}')
+	total=$(ubus call system info | grep -m1 total | tr -cd 0-9)
+	available=$(ubus call system info | grep available | tr -cd 0-9)
 	required=$(echo - |awk -v percent=$required_percent -v total=$total '{printf percent*total}')
 
 	if [ "$available" -ge "$required" ]; then
