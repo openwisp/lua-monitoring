@@ -11,6 +11,7 @@ BUILD_DIR=${BUILD_DIR-./build}
 DOWNLOADS_DIR=${DOWNLOADS_DIR-./downloads}
 START_TIME=${START_TIME-$(date +"%Y-%m-%d-%H%M%S")}
 VERSIONED_DIR="$DOWNLOADS_DIR/$START_TIME"
+COMPILE_TARGET=${COMPILE_TARGET-mips_24kc}
 LATEST_LINK="$DOWNLOADS_DIR/latest"
 CORES=${CORES:-1}
 CURRENT_DIR=$(pwd)
@@ -52,7 +53,7 @@ fi
 
 make -j$CORES package/openwrt-openwisp-monitoring/compile || exit 1
 
-mv $BUILD_DIR/openwrt/bin/packages/mips_24kc/openwisp $VERSIONED_DIR
+mv $BUILD_DIR/openwrt/bin/packages/$COMPILE_TARGET/openwisp $VERSIONED_DIR
 
 rm $LATEST_LINK || true
 ln -s $VERSIONED_DIR $LATEST_LINK

@@ -40,6 +40,7 @@ start_service() {
     config_load openwisp_monitoring
     config_get monitored_interfaces monitoring monitored_interfaces "*"
     config_get interval monitoring interval "300"
+    config_get required_memory monitoring required_memory "0.05"
 
     interval="$(time_to_seconds "$interval")"
     if [ "$interval" -lt 1 ]; then
@@ -50,9 +51,10 @@ start_service() {
     fi
     interval="--interval $interval"
     monitored_interfaces="--monitored_interfaces $monitored_interfaces"
+    required_memory="--required_memory $required_memory"
 
     procd_open_instance "openwisp_monitoring_monitoring"
-    procd_set_param command $PROG "$base_url" "$uuid" "$key" "$verify_ssl" "$interval" "$monitored_interfaces"
+    procd_set_param command $PROG "$base_url" "$uuid" "$key" "$verify_ssl" "$interval" "$monitored_interfaces" "$required_memory"
     procd_set_param respawn "${respawn_threshold:-3600}" "${respawn_timeout:-5}" "${respawn_retry:-5}"
     procd_close_instance
     logger -s "$PROG_NAME started" \

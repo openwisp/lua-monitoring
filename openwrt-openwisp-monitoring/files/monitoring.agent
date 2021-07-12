@@ -9,6 +9,7 @@ while [ -n "$1" ]; do
 		--verify_ssl) export verify_ssl="$2"; shift;;
 		--interval) export INTERVAL="$2"; shift;;
 		--monitored_interfaces) export MONITORED_INTERFACES=$2; shift;;
+		--required_memory) export required_percent=$2; shift;;
 		-*)
 			echo "Invalid option: $1"
 			exit 1
@@ -31,6 +32,25 @@ fi
 
 URL="$BASE_URL/api/v1/monitoring/device/$UUID/?key=$KEY"
 
+tmp_dir="/tmp/openwisp/monitoring"
+
+check_available_memory(){
+	total=$(ubus call system info | grep -m1 total | tr -cd 0-9)
+	available=$(ubus call system info | grep available | tr -cd 0-9)
+	required=$(echo - |awk -v percent=$required_percent -v total=$total '{printf percent*total}')
+
+	if [ "$available" -ge "$required" ]; then
+		echo "1"
+	else
+		logger -s "Not enough memory available" \
+		       -t monitoring \
+		       -p daemon.err
+
+		echo "0"
+	fi
+
+}
+
 collect_data(){
 	n=0
 	logger -s "Collecting NetJSoN Monitoring data" \
@@ -51,6 +71,17 @@ collect_data(){
 	done
 }
 
+save_data() {
+	file_name="$(date +'%d-%m-%Y_%H:%M:%S').json"
+	# make directory
+	mkdir -p $tmp_dir
+	#save data with file_name
+	echo "$data" > "$tmp_dir/$file_name)"
+	logger -s "Data saved temporarily" \
+	       -t monitoring \
+	       -p daemon.info
+}
+
 while true
 do
 	data="$(collect_data)"
@@ -68,6 +99,9 @@ do
 		logger -s "Data not sent successfully. Exit code is $exit_code" \
 		       -t monitoring \
 		       -p daemon.err
+
+		memory_available="$(check_available_memory)"
+		[ "$memory_available" != "0" ] && save_data
 	fi
 
 	sleep "$INTERVAL" & wait $!
