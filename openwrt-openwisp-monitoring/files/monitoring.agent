@@ -25,12 +25,11 @@ if [ "$VERSION" -eq "1" ]; then
   exit 0
 fi
 
-CURL_COMMAND="curl -s -w "%{http_code}""
-if [ "$verify_ssl" = 0 ]; then
-  CURL_COMMAND="$CURL_COMMAND -k"
-fi
-
 URL="$BASE_URL/api/v1/monitoring/device/$UUID/?key=$KEY"
+
+CURL_COMMAND="curl -s -w "%{http_code}""
+[ "$verify_ssl" = "0" ] && CURL_COMMAND="$CURL_COMMAND -k"
+[ "$verbose_mode" = "1" ] && CURL_COMMAND="$CURL_COMMAND -v"
 
 collect_data(){
   n=0
