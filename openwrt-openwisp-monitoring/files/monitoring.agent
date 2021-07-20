@@ -1,5 +1,6 @@
 #!/bin/sh
 
+VERSION=0 #default value of version
 while [ -n "$1" ]; do
   case "$1" in
     --version|-v) export VERSION=1; break;;
@@ -13,7 +14,7 @@ while [ -n "$1" ]; do
       echo "Invalid option: $1"
       exit 1
     ;;
-    *) break;
+    *) break;;
   esac
   shift;
 done
@@ -24,18 +25,17 @@ if [ "$VERSION" -eq "1" ]; then
   exit 0
 fi
 
-CURL_COMMAND='curl'
-if [ "$verify_ssl" == 0 ]; then
-  CURL_COMMAND="$CURL_COMMAND -k"
-fi
-
 URL="$BASE_URL/api/v1/monitoring/device/$UUID/?key=$KEY"
+
+CURL_COMMAND="curl -s -w "%{http_code}""
+[ "$verify_ssl" = "0" ] && CURL_COMMAND="$CURL_COMMAND -k"
+[ "$verbose_mode" = "1" ] && CURL_COMMAND="$CURL_COMMAND -v"
 
 collect_data(){
   n=0
-  logger -s "Collecting NetJSoN Monitoring data" \
-     -t monitoring \
-     -p daemon.info
+  logger -s "Collecting NetJSON Monitoring data" \
+         -t monitoring \
+         -p daemon.info
 
   until [ "$n" -ge 5 ]
   do
@@ -55,19 +55,17 @@ while true
 do
   data="$(collect_data)"
   #send data
-  $($CURL_COMMAND -H "Content-Type: application/json" \
-          -X POST \
-          -d "$data" \
-          -v "$URL")
-  exit_code=$?
-  if [ "$exit_code" == "0" ]; then
+  response_code=$($CURL_COMMAND -H "Content-Type: application/json" \
+    -d "$data" \
+    -v "$URL")
+  if [ "$response_code" == "200" ]; then
     logger -s "Data sent successfully." \
-       -t monitoring \
-       -p daemon.info
+           -t monitoring \
+           -p daemon.info
   else
-    logger -s "Data not sent successfully. Exit code is $exit_code" \
-       -t monitoring \
-       -p daemon.err
+    logger -s "Data not sent successfully. Response code is $response_code" \
+           -t monitoring \
+           -p daemon.err
   fi
 
   sleep "$INTERVAL" & wait $!
